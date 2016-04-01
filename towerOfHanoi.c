@@ -187,6 +187,27 @@ void freeBlocks(towerBlock* stacks[3]){
 	}
 }
 
+/**
+Solve(disk, source, dest, spare, stacks)
+Calls a recursive method to solve a given Hanoi Puzzle.
+@param - disk - int, 1 number less than the total number of disks.
+		This is reduced by one each recursive call until it reaches the base case
+@param source - int representing starting stack
+@param dest - int representing desired destination stack
+@param spare - int representing spare stack for moving blocks
+@param stacks - array of stacks
+**/
+void solve(int disk, int source, int dest, int spare, towerBlock * stacks[3]){
+	if(disk == 0){
+		moveBlock(source, dest, stacks);
+	}
+	else{
+		solve(disk - 1, source, spare, dest, stacks);
+		moveBlock(source, dest, stacks);
+		solve(disk - 1, spare, dest, source, stacks);
+	}
+}
+
 int main(int argc, char* argv[]){
 	//HardCoded array: Stacks.
 	//Stacks is an array of three pointers, which represent the three rods.
@@ -215,59 +236,10 @@ int main(int argc, char* argv[]){
 	//stacks[1] and stacks[2] will just point to NULL
 	initTowers(numberOfBlocks, stacks);
 	displayStacks(stacks);
-	moveBlock(0,1,stacks);
+	solve(numberOfBlocks - 1, 0,1,2, stacks);
 	displayStacks(stacks);
-	moveBlock(0,2,stacks);
-	displayStacks(stacks);
-	moveBlock(1,2,stacks);
-	displayStacks(stacks);	
-	moveBlock(0,1,stacks);
-	displayStacks(stacks);
-	moveBlock(2,1,stacks);
-	displayStacks(stacks);
-	moveBlock(2,0,stacks);
-	displayStacks(stacks);
-	moveBlock(1,0,stacks);
-	displayStacks(stacks);
-	moveBlock(1,2,stacks);
-	displayStacks(stacks);
-	moveBlock(0,1,stacks);
-	displayStacks(stacks);
-	moveBlock(0,2,stacks);
-	displayStacks(stacks);
-	moveBlock(1,2,stacks);
-	displayStacks(stacks);
-
+	
 	//printf("=======CLEANING=======\n");
 	freeBlocks(stacks);
 	return EXIT_SUCCESS;
 }
-
-/**
-Recursive pattern for solving stack of 3
-Could be useful later for creating solve method
-
-	displayStacks(stacks);
-	moveBlock(0,1,stacks);
-	displayStacks(stacks);
-	moveBlock(0,2,stacks);
-	displayStacks(stacks);
-	moveBlock(1,2,stacks);
-	displayStacks(stacks);	
-	moveBlock(0,1,stacks);
-	displayStacks(stacks);
-	moveBlock(2,1,stacks);
-	displayStacks(stacks);
-	moveBlock(2,0,stacks);
-	displayStacks(stacks);
-	moveBlock(1,0,stacks);
-	displayStacks(stacks);
-	moveBlock(1,2,stacks);
-	displayStacks(stacks);
-	moveBlock(0,1,stacks);
-	displayStacks(stacks);
-	moveBlock(0,2,stacks);
-	displayStacks(stacks);
-	moveBlock(1,2,stacks);
-	displayStacks(stacks);
-**/
