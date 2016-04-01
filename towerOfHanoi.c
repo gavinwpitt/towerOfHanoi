@@ -31,6 +31,13 @@ void usage(){
 	printf("NumberOfBlocks must be integer greater than or equal to 0\n\n");
 }
 
+void inputUsage(){
+	printf("\nTower of Hanoi Input Loop:\n");
+	printf("Enter valid integers [0-2] to move blocks from source to destination stacks\n");
+	printf("enter '9' '9' to quit\n");
+	printf("enter '8' '8' to display board without moving\n");
+}
+
 /**
 initTowers(numberOfBlocks, stacks[3])
 
@@ -48,12 +55,8 @@ void initTowers(int numberOfBlocks, towerBlock* stacks[3]){
 	//Create bottom of stack and set it equal to Null
 	towerBlock* permaRoot = NULL;
 	
-	if(permaRoot == NULL)
-		printf("root==NULL\n");
 	//set second and third stacks index to NULL
 	stacks[1] = permaRoot; stacks[2] = permaRoot;
-	if(stacks[1] == NULL)
-		printf("stacks==NULL\n");
 	
 	int i;
 	towerBlock* root = NULL;
@@ -63,17 +66,11 @@ void initTowers(int numberOfBlocks, towerBlock* stacks[3]){
 		towerBlock* block = malloc(sizeof(towerBlock));
 		block->size = i;
 		block->next = root;
-		printf("block size: %d\n", block->size);
 		root = block;
-		//printf("new root size: %d\n", root->size);
 	}
 
 	//set first stacks index (stack A) to the top of the stack of blocks
-	printf("set root\n");
 	stacks[0] = root;
-	printf("root set\n");
-	//set second and third stacks index to NULL
-	//stacks[1] = NULL; stacks[2] = NULL;
 
 }
 
@@ -91,12 +88,13 @@ Uses a temporary pointer to pop off the top source value and push it to top of
 @param - source - int representing source stack (0-3)
 @param - destination - int representing destination stack (0-3)
 @param - stacks - array of towerBlock pointers (stacks)
+return - Int representing if it was success or failure
 **/
-void moveBlock(int source, int destination, towerBlock* stacks[3]){
+int moveBlock(int source, int destination, towerBlock* stacks[3]){
 	if(source < 0 || source > 2 || destination < 0 || destination > 2){
-		printf("Invalid Range! Source or Destination must be in range [0..2]\n");
+		printf("\nInvalid Range! Source or Destination must be in range [0..2]\n");
 		//usage();
-		return;
+		return EXIT_FAILURE;
 	}
 
 	if(stacks[source]){
@@ -116,9 +114,12 @@ void moveBlock(int source, int destination, towerBlock* stacks[3]){
 				//top value in stack (which is NULL)
 				temp->next = stacks[destination];
 				stacks[destination] = temp;
+
+				return EXIT_SUCCESS;
 			}else{
-				printf("Invalid Move! Source (%d) > Destination(%d)\n",
+				printf("\nInvalid Move! Source (%d) > Destination(%d)\n",
 					stacks[source]->size, stacks[destination]->size);
+				return EXIT_FAILURE;
 				//usage();
 			}
 		}else{
@@ -133,9 +134,11 @@ void moveBlock(int source, int destination, towerBlock* stacks[3]){
 			//top value in stack (which is NULL)
 			temp->next = stacks[destination];
 			stacks[destination] = temp;
+			return EXIT_SUCCESS;
 		}
 	}else{
-		printf("Invalid Move! Empty Source Stack\n");
+		printf("\nInvalid Move! Empty Source Stack\n");
+		return EXIT_FAILURE;
 		//usage();
 	}
 }
@@ -173,12 +176,10 @@ void freeBlocks(towerBlock* stacks[3]){
 	towerBlock* temp;
 	int i;
 	for(i = 0; i < 3; i++){
-		//printf("----------Cleaning Stack %d\n", i);
 		if((stacks[i])){
 			block = (stacks[i]);
 			temp = (stacks[i]);
 			while(temp){
-				//printf("Cleaning Block %d\n", block->size);
 				temp = temp->next;
 				free(block);
 				block = temp;
@@ -232,12 +233,31 @@ int main(int argc, char* argv[]){
 
 
 	//initialize three polls with the number of blocks.
-	//stacks[0] point to accending stack towerBlocks,
-	//stacks[1] and stacks[2] will just point to NULL
 	initTowers(numberOfBlocks, stacks);
+
+	//enter input loop
+	int source, destination;
+	displayStacks(stacks);
+	while(1){
+		inputUsage();
+		printf("Move block from [source] to [destination]: ");
+		scanf("%d %d", &source, &destination);
+		if(source == 9)
+			break;
+		if(source == 8)
+			displayStacks(stacks);
+		else{
+			printf("Moving Block from %d to %d... \n", source, destination);
+			if(!moveBlock(source, destination, stacks))
+				displayStacks(stacks);
+		}
+
+	}
+	/**
 	displayStacks(stacks);
 	solve(numberOfBlocks - 1, 0,1,2, stacks);
 	displayStacks(stacks);
+	**/
 	
 	//printf("=======CLEANING=======\n");
 	freeBlocks(stacks);
