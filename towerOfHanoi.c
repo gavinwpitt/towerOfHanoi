@@ -5,22 +5,13 @@ towerOfHanoi.c
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "display.h"
+#include "stack.h"
 
-/**
-Definition for the towerBlocks.
-Will function like a stack
-Will have an int attribute, size, for diameter of block.
-Will have a pointer to another block struct, which will be the block that is 'under' this one.
-
-@param size - size of block struct. Used to compare to other blocks and see if move is legal
-				(Blocks cannot be placed ontop of blocks of a smaller size).
-@param next - pointer to another towerBlock struct. The thing it points to will be 'under' this
-				towerBlock. This will allow towerBlocks to be used as a stack.
-**/
-typedef struct towerBlock {
-    int size;                  // the data stored in the node
-    struct towerBlock * next;     // node's left child
-} towerBlock;
+int moveBlock(int source, int destination, towerBlock* stacks[3]);
+void initTowers(int numberOfBlocks, towerBlock* stacks[3]);
+void freeBlocks(towerBlock* stacks[3]);
+void solve(int disk, int source, int dest, int spare, towerBlock * stacks[3]);
 
 /**
 Temporary Usage Message
@@ -63,10 +54,14 @@ void initTowers(int numberOfBlocks, towerBlock* stacks[3]){
 	//Iteratively create blocks, with the next pointer always pointing to root
 	//Change root with each iteration to the current block.
 	for(i = numberOfBlocks; i > 0; i--){
+		printf("adding block: %d\n", i);
+		push(&root, i);
+		/**
 		towerBlock* block = malloc(sizeof(towerBlock));
 		block->size = i;
 		block->next = root;
 		root = block;
+		*/
 	}
 
 	//set first stacks index (stack A) to the top of the stack of blocks
@@ -103,18 +98,11 @@ int moveBlock(int source, int destination, towerBlock* stacks[3]){
 			//Check if is valid move (source block is smaller than destination block)
 			if(stacks[source]->size  < stacks[destination]->size ){
 				//move block
-				//create temp pointer, point it to top of source stack
-				towerBlock * temp;
-				temp = stacks[source];
+				//push value from source stack onto destiantion stack
+				push( &(stacks[destination]), stacks[source]->size );
 
-				//set top of source stack equal to next value in source
-				stacks[source] = stacks[source]->next;
-
-				//move old top of source stack over to destination stack and set it to
-				//top value in stack (which is NULL)
-				temp->next = stacks[destination];
-				stacks[destination] = temp;
-
+				//pop value off of old stack. This frees the memory.
+				pop(&(stacks[source]));
 				return EXIT_SUCCESS;
 			}else{
 				printf("\nInvalid Move! Source (%d) > Destination(%d)\n",
@@ -123,17 +111,12 @@ int moveBlock(int source, int destination, towerBlock* stacks[3]){
 				//usage();
 			}
 		}else{
-			//create temp pointer, point it to top of source stack
-			towerBlock * temp;
-			temp = stacks[source];
+			//move block
+			//push value from source stack onto destiantion stack
+			push( &(stacks[destination]), stacks[source]->size );
 
-			//set top of source stack equal to next value in source
-			stacks[source] = stacks[source]->next;
-
-			//move old top of source stack over to destination stack and set it to
-			//top value in stack (which is NULL)
-			temp->next = stacks[destination];
-			stacks[destination] = temp;
+			//pop value off of old stack. This frees the memory.
+			pop(&(stacks[source]));
 			return EXIT_SUCCESS;
 		}
 	}else{
@@ -172,18 +155,12 @@ Takes in the array of three potential stacks and iterates though them, freeing t
 @param -stacks - array of three stacks to be freed
 **/
 void freeBlocks(towerBlock* stacks[3]){
-	towerBlock* block;
-	towerBlock* temp;
+	//towerBlock* block;
+	//towerBlock* temp;
 	int i;
 	for(i = 0; i < 3; i++){
-		if((stacks[i])){
-			block = (stacks[i]);
-			temp = (stacks[i]);
-			while(temp){
-				temp = temp->next;
-				free(block);
-				block = temp;
-			}
+		while(stacks[i]){
+			pop(&(stacks[i]));
 		}
 	}
 }
@@ -224,7 +201,6 @@ int main(int argc, char* argv[]){
 	//get user input for number of blocks
 	int numberOfBlocks = atoi(argv[1]);
 
-	printf("%d\n",numberOfBlocks);
 	//error check user input
 	if(numberOfBlocks < 0){
 		usage();
@@ -234,11 +210,17 @@ int main(int argc, char* argv[]){
 
 	//initialize three polls with the number of blocks.
 	initTowers(numberOfBlocks, stacks);
+	//init display
+	//initDisplay();
 
 	//enter input loop
 	int source, destination;
-	displayStacks(stacks);
+	//displayStacks(stacks);
+	//printf("Move block from [source] to [destination]: ");
+	//printBlock(0, 0);
+	//scanf("%d %d", &source, &destination);
 	while(1){
+		displayStacks(stacks);
 		inputUsage();
 		printf("Move block from [source] to [destination]: ");
 		scanf("%d %d", &source, &destination);
@@ -248,8 +230,7 @@ int main(int argc, char* argv[]){
 			displayStacks(stacks);
 		else{
 			printf("Moving Block from %d to %d... \n", source, destination);
-			if(!moveBlock(source, destination, stacks))
-				displayStacks(stacks);
+			moveBlock(source, destination, stacks);
 		}
 
 	}
@@ -260,6 +241,7 @@ int main(int argc, char* argv[]){
 	**/
 	
 	//printf("=======CLEANING=======\n");
+	//endDisplay();
 	freeBlocks(stacks);
 	return EXIT_SUCCESS;
 }
