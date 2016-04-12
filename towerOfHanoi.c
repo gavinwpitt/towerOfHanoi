@@ -5,7 +5,6 @@ towerOfHanoi.c
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "display.h"
 #include "stack.h"
 
 int moveBlock(int source, int destination, towerBlock* stacks[3]);
@@ -24,9 +23,17 @@ void usage(){
 
 void inputUsage(){
 	printf("\nTower of Hanoi Input Loop:\n");
-	printf("Enter valid integers [0-2] to move blocks from source to destination stacks\n");
-	printf("enter '9' '9' to quit\n");
-	printf("enter '8' '8' to display board without moving\n");
+	printf("Enter characters [A,B,C] to move blocks from source to destination stacks\n");
+	printf("Example: A B moves block from A to B\n");
+	printf("enter 'Q' 'Q' to quit\n");
+}
+
+int adapter(char input){
+	if( (int)input < 97 ){
+		return (int)input % 65;
+	}else{
+		return (int)input % 97;
+	}
 }
 
 /**
@@ -87,7 +94,7 @@ return - Int representing if it was success or failure
 **/
 int moveBlock(int source, int destination, towerBlock* stacks[3]){
 	if(source < 0 || source > 2 || destination < 0 || destination > 2){
-		printf("\nInvalid Range! Source or Destination must be in range [0..2]\n");
+		printf("\nInvalid Input! Source or Destination must be in set {A,B,C,Q}\n");
 		//usage();
 		return EXIT_FAILURE;
 	}
@@ -135,7 +142,7 @@ void displayStacks(towerBlock* stacks[3]){
 	printf("---------DisplayingStacks\n");
 	towerBlock* block;
 	for(i = 0; i < 3; i++){
-		printf("Stack %d\n", i);
+		printf("Stack %c\n", (char)(i + 65));
 		if((stacks[i])){
 			block = (stacks[i]);
 			while(block){
@@ -214,22 +221,22 @@ int main(int argc, char* argv[]){
 	//initDisplay();
 
 	//enter input loop
+	char sourceChar, destinationChar;
 	int source, destination;
-	//displayStacks(stacks);
-	//printf("Move block from [source] to [destination]: ");
-	//printBlock(0, 0);
-	//scanf("%d %d", &source, &destination);
 	while(1){
+		fflush(stdin);
 		displayStacks(stacks);
 		inputUsage();
 		printf("Move block from [source] to [destination]: ");
-		scanf("%d %d", &source, &destination);
-		if(source == 9)
+		scanf(" %c %c", &sourceChar, &destinationChar);
+		source = adapter(sourceChar); destination = adapter(destinationChar);
+		if(source == 16)
 			break;
 		if(source == 8)
 			displayStacks(stacks);
 		else{
-			printf("Moving Block from %d to %d... \n", source, destination);
+			printf("Moving Block from %c to %c... \n", (char)(source + 65), 
+													   (char)(destination + 65));
 			moveBlock(source, destination, stacks);
 		}
 
