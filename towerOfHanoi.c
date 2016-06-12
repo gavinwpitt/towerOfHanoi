@@ -5,6 +5,7 @@ towerOfHanoi.c
 
 #include <stdlib.h>
 #include <stdio.h>
+#include "display.h"
 #include "stack.h"
 
 int moveBlock(int source, int destination, towerBlock* stacks[3]);
@@ -23,17 +24,9 @@ void usage(){
 
 void inputUsage(){
 	printf("\nTower of Hanoi Input Loop:\n");
-	printf("Enter characters [A,B,C] to move blocks from source to destination stacks\n");
-	printf("Example: A B moves block from A to B\n");
-	printf("enter 'Q' 'Q' to quit\n");
-}
-
-int adapter(char input){
-	if( (int)input < 97 ){
-		return (int)input % 65;
-	}else{
-		return (int)input % 97;
-	}
+	printf("Enter valid integers [0-2] to move blocks from source to destination stacks\n");
+	printf("enter '9' '9' to quit\n");
+	printf("enter '8' '8' to display board without moving\n");
 }
 
 /**
@@ -61,7 +54,6 @@ void initTowers(int numberOfBlocks, towerBlock* stacks[3]){
 	//Iteratively create blocks, with the next pointer always pointing to root
 	//Change root with each iteration to the current block.
 	for(i = numberOfBlocks; i > 0; i--){
-		printf("adding block: %d\n", i);
 		push(&root, i);
 		/**
 		towerBlock* block = malloc(sizeof(towerBlock));
@@ -94,7 +86,7 @@ return - Int representing if it was success or failure
 **/
 int moveBlock(int source, int destination, towerBlock* stacks[3]){
 	if(source < 0 || source > 2 || destination < 0 || destination > 2){
-		printf("\nInvalid Input! Source or Destination must be in set {A,B,C,Q}\n");
+		printf("\nInvalid Range! Source or Destination must be in range [0..2]\n");
 		//usage();
 		return EXIT_FAILURE;
 	}
@@ -139,19 +131,38 @@ Will create a better front end using ncurses
 **/
 void displayStacks(towerBlock* stacks[3]){
 	int i = 0;
-	printf("---------DisplayingStacks\n");
+	//printf("---------DisplayingStacks\n");
 	towerBlock* block;
+	towerBlock* reverseBlock = NULL;
+	towerBlock* temp;
 	for(i = 0; i < 3; i++){
-		printf("Stack %c\n", (char)(i + 65));
+		//printf("Stack %d\n", i);
 		if((stacks[i])){
 			block = (stacks[i]);
+			//This first while loop reverses the stack
 			while(block){
-				printf("%d\n", block->size);
+				/**
+				if(block->next == NULL)
+					printBlock(10 * i, 10 + 1, block->size);
+				printBlock(10 *i, 10 - block->size, block->size);
+				**/
+				//printf("%d\n", block->size);
+				push(&reverseBlock, block->size);
 				block = block->next;
+			}
+			//printf("REVERSED\n");
+			int j = 1;
+			while(reverseBlock){
+				printBlock(reverseBlock->size, i, j);
+				reverseBlock = reverseBlock->next;
+				j++;
 			}
 		}
 	}
-	printf("--------StacksDisplayed\n");
+	while(reverseBlock){
+		pop(&reverseBlock);
+	}
+	//printf("--------StacksDisplayed\n");
 }
 
 /**
@@ -215,32 +226,42 @@ int main(int argc, char* argv[]){
 	}
 
 
-	//initialize three polls with the number of blocks.
+	//initialize three 'poles' with the number of blocks.
 	initTowers(numberOfBlocks, stacks);
 	//init display
-	//initDisplay();
+	initDisplay();
 
 	//enter input loop
-	char sourceChar, destinationChar;
 	int source, destination;
+	//displayStacks(stacks);
+	//printf("Move block from [source] to [destination]: ");
+	//printBlock(0, 0);
+	//scanf("%d %d", &source, &destination);
 	while(1){
-		fflush(stdin);
+		updateDisplay();
+		/**
+		printBlock(10,10, 1);
+		printBlock(10,11, 2);
+		printBlock(10,12, 3);
+		printBlock(10,13, 4);
+		*/
 		displayStacks(stacks);
-		inputUsage();
-		printf("Move block from [source] to [destination]: ");
-		scanf(" %c %c", &sourceChar, &destinationChar);
-		source = adapter(sourceChar); destination = adapter(destinationChar);
-		if(source == 16)
+		//inputUsage();
+		//printf("Move block from [source] to [destination]: ");
+		scanf("%d %d", &source, &destination);
+		if(source == 9)
 			break;
-		if(source == 8)
-			displayStacks(stacks);
+		if(source == 8){
+			//displayStacks(stacks);
+		}
 		else{
-			printf("Moving Block from %c to %c... \n", (char)(source + 65), 
-													   (char)(destination + 65));
+		//	printf("Moving Block from %d to %d... \n", source, destination);
 			moveBlock(source, destination, stacks);
 		}
 
 	}
+
+
 	/**
 	displayStacks(stacks);
 	solve(numberOfBlocks - 1, 0,1,2, stacks);
@@ -249,6 +270,7 @@ int main(int argc, char* argv[]){
 	
 	//printf("=======CLEANING=======\n");
 	//endDisplay();
+	endDisplay();
 	freeBlocks(stacks);
 	return EXIT_SUCCESS;
 }
