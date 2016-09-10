@@ -7,11 +7,28 @@ Display will have a lot of ncurses functions that will display the 'backend' tow
 
 #include <ncurses.h>
 #include <math.h>
+#include <string.h>
 
 static int max_y = 30;
 static int max_x = 90;
 static int poles_y;
 static int poles_x[3];
+
+int getUserInput(int i){
+	int input;
+	mvprintw(max_y - 1, 1, "Move Block From: ");
+	refresh();
+	scanf("%d", &input);
+	mvprintw(max_y - 1, 18 + (2*i), "%d", input);
+	refresh();
+	return input;
+}
+
+void printErrorMessage(char message[]){
+	int length = strlen(message);
+	mvprintw(max_y - 7, (max_x / 2) - (length / 2), message);
+	refresh();
+}
 
 void initDisplay(){
 	//Initialization
@@ -63,13 +80,16 @@ void updateDisplay(){
 	clearDisplay(max_y,max_x);
 	for(int i = 1; i < max_x; i++){
 		mvprintw(max_y, i, "=");
+		mvprintw(0, i, "=");
+	}
+	for(int i = 0; i <=max_y; i++){
+		mvprintw(i, max_x, "|");
+		mvprintw(i, 0, "|");
 	}
 	mvprintw(poles_y, poles_x[0], "==A==");
 	mvprintw(poles_y, poles_x[1], "==B==");
 	mvprintw(poles_y, poles_x[2], "==C==");
 	mvwprintw(stdscr, 0, 0, "Tower of Hanoi");
-	mvprintw(3,3, "%d %d", max_y, max_x);
-	mvprintw(max_y - 1, 1, "Move Block from:");
 	move(max_y + 1, 2);
 	refresh();
 }
@@ -88,12 +108,15 @@ void printBlock(int blockNumber, int stackNumber, int height){
 		mvprintw(poles_y - height, poles_x[stackNumber] + i, " ");
 	}
 	mvprintw(poles_y - height, poles_x[stackNumber], "%d", blockNumber);
-	/**
-	for(i = 0; i <= boxScalar; i++){
-		mvwprintw(stdscr, starty, startx + i, " ");
-	}
-	*/
 	attroff(COLOR_PAIR( colorPair ) );
+	refresh();
+}
+
+void printSuccessMessage(){
+	mvprintw(max_y - 4, poles_x[1] - 3,"'Righteous!'");
+	mvprintw(max_y - 3, poles_x[1] - 1,"   _    ");
+	mvprintw(max_y - 2, poles_x[1] - 1," \\( )/");
+	mvprintw(max_y - 1, poles_x[1] - 1,"  | |  ");
 	refresh();
 }
 

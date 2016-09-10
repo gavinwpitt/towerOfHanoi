@@ -7,11 +7,13 @@ towerOfHanoi.c
 #include <stdio.h>
 #include "display.h"
 #include "stack.h"
+#include <unistd.h>
 
 int moveBlock(int source, int destination, towerBlock* stacks[3]);
 void initTowers(int numberOfBlocks, towerBlock* stacks[3]);
 void freeBlocks(towerBlock* stacks[3]);
 void solve(int disk, int source, int dest, int spare, towerBlock * stacks[3]);
+static int waitTime = 500000;
 
 /**
 Temporary Usage Message
@@ -86,7 +88,7 @@ return - Int representing if it was success or failure
 **/
 int moveBlock(int source, int destination, towerBlock* stacks[3]){
 	if(source < 0 || source > 2 || destination < 0 || destination > 2){
-		printf("\nInvalid Range! Source or Destination must be in range [0..2]\n");
+		printErrorMessage("\nInvalid Range! Source or Destination must be in range [0..2]\n");
 		//usage();
 		return EXIT_FAILURE;
 	}
@@ -104,8 +106,7 @@ int moveBlock(int source, int destination, towerBlock* stacks[3]){
 				pop(&(stacks[source]));
 				return EXIT_SUCCESS;
 			}else{
-				printf("\nInvalid Move! Source (%d) > Destination(%d)\n",
-					stacks[source]->size, stacks[destination]->size);
+				printErrorMessage("Invalid Move! Source block cannot be larger than destination!");
 				return EXIT_FAILURE;
 				//usage();
 			}
@@ -119,7 +120,8 @@ int moveBlock(int source, int destination, towerBlock* stacks[3]){
 			return EXIT_SUCCESS;
 		}
 	}else{
-		printf("\nInvalid Move! Empty Source Stack\n");
+		printErrorMessage("Invalid Move! Empty Source Stack");
+		usleep(waitTime);
 		return EXIT_FAILURE;
 		//usage();
 	}
@@ -141,12 +143,6 @@ void displayStacks(towerBlock* stacks[3]){
 			block = (stacks[i]);
 			//This first while loop reverses the stack
 			while(block){
-				/**
-				if(block->next == NULL)
-					printBlock(10 * i, 10 + 1, block->size);
-				printBlock(10 *i, 10 - block->size, block->size);
-				**/
-				//printf("%d\n", block->size);
 				push(&reverseBlock, block->size);
 				block = block->next;
 			}
@@ -195,11 +191,24 @@ Calls a recursive method to solve a given Hanoi Puzzle.
 **/
 void solve(int disk, int source, int dest, int spare, towerBlock * stacks[3]){
 	if(disk == 0){
+		updateDisplay();
+		displayStacks(stacks);
+		usleep(waitTime);
 		moveBlock(source, dest, stacks);
+		updateDisplay();
+		displayStacks(stacks);
+		usleep(waitTime);
+
 	}
 	else{
 		solve(disk - 1, source, spare, dest, stacks);
+		updateDisplay();
+		displayStacks(stacks);
+		usleep(waitTime);
 		moveBlock(source, dest, stacks);
+		updateDisplay();
+		displayStacks(stacks);
+		usleep(waitTime);
 		solve(disk - 1, spare, dest, source, stacks);
 	}
 }
@@ -211,13 +220,20 @@ int main(int argc, char* argv[]){
 	towerBlock* stacks[3];// = malloc(sizeof(towerBlock) * 3);
 
 	//error check user input
-	if(argc != 2){
+	if( !(argc == 2 || argc == 3) ){
 		usage();
 		return EXIT_FAILURE;
 	}
 
+	int solveBoolean = 0;
+	int numberOfBlocks = 0;
 	//get user input for number of blocks
-	int numberOfBlocks = atoi(argv[1]);
+	if(argc == 2){
+		numberOfBlocks = atoi(argv[1]);
+	}else{
+		solveBoolean = 1;
+		numberOfBlocks = atoi(argv[1]);
+	}
 
 	//error check user input
 	if(numberOfBlocks < 0){
@@ -237,28 +253,37 @@ int main(int argc, char* argv[]){
 	//printf("Move block from [source] to [destination]: ");
 	//printBlock(0, 0);
 	//scanf("%d %d", &source, &destination);
-	while(1){
+	if(solveBoolean){
+		printf(" :( \n");
+		solve(numberOfBlocks - 1, 0, 2, 1, stacks);
+		printSuccessMessage();
+		printErrorMessage("Press Any Key to Quit");
+		getchar();
+	}else{
 		updateDisplay();
-		/**
-		printBlock(10,10, 1);
-		printBlock(10,11, 2);
-		printBlock(10,12, 3);
-		printBlock(10,13, 4);
-		*/
 		displayStacks(stacks);
-		//inputUsage();
-		//printf("Move block from [source] to [destination]: ");
-		scanf("%d %d", &source, &destination);
-		if(source == 9)
-			break;
-		if(source == 8){
-			//displayStacks(stacks);
+		while(1){
+			//printMessage("Move block from [source] to [destination]: ");
+			source = getUserInput(0);
+			destination = getUserInput(1);
+			getchar();
+			getchar();
+			if(source == 9)
+				break;
+			if(source == 8){
+				//displayStacks(stacks);
+			}
+			else{
+				if(moveBlock(source, destination, stacks) == EXIT_SUCCESS){
+					updateDisplay();
+					displayStacks(stacks);
+				}else{
+					getchar();
+					updateDisplay();
+					displayStacks(stacks);
+				}
+			}
 		}
-		else{
-		//	printf("Moving Block from %d to %d... \n", source, destination);
-			moveBlock(source, destination, stacks);
-		}
-
 	}
 
 
