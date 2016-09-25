@@ -8,5 +8,8 @@ It utilizes a three index array of pointers create dynamically allocated stacks 
 
 It can be run in the terminal, after it is compiled using the MakeFile, by running:
   ./towerOfHanoi [number of desired blocks]
-  
+
+![alt tag](http://i.imgur.com/miS8txU.png)
+
+
 ![alt tag](http://i.imgur.com/dd5K1zi.png)
